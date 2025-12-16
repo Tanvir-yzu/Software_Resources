@@ -9,6 +9,7 @@ A curated collection of high-value Django packages, UI frameworks, and utilities
 - [Environment & Code Quality](#environment--code-quality)
 - [Project Maintenance & Security](#project-maintenance--security)
 - [Database Management](#database-management)
+- [Authentication & Authorization](#authentication--authorization)
 - [Additional Resources](#additional-resources)
 
 ---
@@ -189,6 +190,9 @@ A curated collection of high-value Django packages, UI frameworks, and utilities
    DEBUG=False
    DATABASE_URL=postgres://user:password@localhost:5432/my_db
    API_KEY=your_external_api_key_here
+   # django-allauth social auth keys (example)
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_SECRET_KEY=your_google_secret_key
    ```
 3. Update `settings.py` to load the `.env` file:
    ```python
@@ -278,6 +282,7 @@ A curated collection of high-value Django packages, UI frameworks, and utilities
    INSTALLED_APPS = [
        # Core apps
        'django.contrib.admin',
+       'django.contrib.auth',
        # ...
        'hijack',  # Add this line
        'hijack.contrib.admin',  # For admin integration
@@ -417,6 +422,111 @@ A curated collection of high-value Django packages, UI frameworks, and utilities
 
 ---
 
+## Authentication & Authorization
+### Django Allauth
+**Link**: [https://django-allauth.readthedocs.io/en/latest/](https://django-allauth.readthedocs.io/en/latest/)  
+**Purpose**: Comprehensive authentication solution for Django – supports email/password login, social authentication (Google, Facebook, GitHub, etc.), and password reset workflows.  
+
+#### Full Installation & Setup
+1. Install via pip:
+   ```bash
+   pip install django-allauth
+   ```
+2. Update `INSTALLED_APPS` in `settings.py` (add required apps for allauth):
+   ```python
+   INSTALLED_APPS = [
+       # Core Django apps
+       'django.contrib.admin',
+       'django.contrib.auth',
+       'django.contrib.contenttypes',
+       'django.contrib.sessions',
+       'django.contrib.messages',
+       'django.contrib.staticfiles',
+       # Required for django-allauth
+       'django.contrib.sites',  # Add this line
+       # django-allauth apps
+       'allauth',
+       'allauth.account',
+       'allauth.socialaccount',
+       # Optional: Add social providers (e.g., Google, GitHub)
+       'allauth.socialaccount.providers.google',
+       'allauth.socialaccount.providers.github',
+       # Your other apps
+   ]
+
+   # Required for django.contrib.sites
+   SITE_ID = 1
+   ```
+3. Configure authentication backends in `settings.py`:
+   ```python
+   AUTHENTICATION_BACKENDS = [
+       # Default Django auth backend (for admin login)
+       'django.contrib.auth.backends.ModelBackend',
+       # allauth-specific authentication backend
+       'allauth.account.auth_backends.AuthenticationBackend',
+   ]
+   ```
+4. Add allauth URL patterns to your project’s `urls.py`:
+   ```python
+   from django.urls import path, include
+   from django.contrib import admin
+
+   urlpatterns = [
+       path('admin/', admin.site.urls),
+       # allauth URLs
+       path('accounts/', include('allauth.urls')),
+       # Your other URLs
+   ]
+   ```
+5. Configure allauth settings (optional but recommended) in `settings.py`:
+   ```python
+   # django-allauth config
+   ACCOUNT_AUTHENTICATION_METHOD = 'email'  # Use email instead of username for login
+   ACCOUNT_EMAIL_REQUIRED = True  # Require email for registration
+   ACCOUNT_USERNAME_REQUIRED = False  # Disable username requirement
+   ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # Require email verification to activate account
+   ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # Redirect after logout
+   LOGIN_REDIRECT_URL = '/'  # Redirect after login
+   # Optional: Customize email confirmation timeout (default: 3 days)
+   ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+   ```
+6. Run migrations (creates tables for allauth models):
+   ```bash
+   python manage.py migrate
+   ```
+7. Collect static files (for allauth’s default templates/CSS):
+   ```bash
+   python manage.py collectstatic
+   ```
+8. (Optional) Set up social authentication (e.g., Google):
+   1. Create OAuth credentials in the [Google Cloud Console](https://console.cloud.google.com/).
+   2. In the Django admin panel:
+      - Navigate to `Social Accounts > Social Applications > Add`.
+      - Select "Google" as the provider.
+      - Enter the `Client ID` and `Secret Key` from Google Cloud Console.
+      - Add your `SITE_ID` to the "Sites" field (e.g., "example.com").
+      - Save the configuration.
+9. Test the setup:
+   - Access the login page: `http://localhost:8000/accounts/login/`
+   - Access the registration page: `http://localhost:8000/accounts/signup/`
+   - Access password reset: `http://localhost:8000/accounts/password/reset/`
+
+#### Key Customization Options
+- **Custom Templates**: Override allauth’s default templates by creating a `templates/allauth/` directory in your project (e.g., `templates/allauth/account/login.html`).
+- **Email Configuration**: Set up SMTP in `settings.py` to send verification/password reset emails:
+  ```python
+  # settings.py
+  EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+  EMAIL_HOST = os.getenv('EMAIL_HOST')
+  EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+  EMAIL_USE_TLS = True
+  EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+  EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+  DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+  ```
+
+---
+
 ## Additional Resources
 ### Comprehensive Django Guide
 **Link**: [https://tanvir-softwares-engineer.gitbook.io/django/](https://tanvir-softwares-engineer.gitbook.io/django/)  
@@ -427,7 +537,7 @@ A curated collection of high-value Django packages, UI frameworks, and utilities
 ## Verify All Installations
 To confirm all packages are installed correctly, run:
 ```bash
-pip freeze | grep -E "jazzmin|django-jet-reboot|django-unfold|django-extensions|python-dotenv|black|django-hijack|django-cleanup|django-dbbackup"
+pip freeze | grep -E "jazzmin|django-jet-reboot|django-unfold|django-extensions|python-dotenv|black|django-hijack|django-cleanup|django-dbbackup|django-allauth"
 ```
 This will list all the installed packages (verify versions match your requirements).
 
