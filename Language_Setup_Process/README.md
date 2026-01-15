@@ -15,17 +15,6 @@ Comprehensive setup instructions for different development environments, includi
 ### Option 1: Direct Link
 Visit the Notion document directly using the link above for full interactive experience.
 
-### Option 2: Embedded View
-The documentation is embedded below for quick reference:
-
-<iframe 
-    src="https://languages-setup.notion.site/ebd/2e9ba05009f280ba80dfc659fc2d1965" 
-    width="100%" 
-    height="600" 
-    frameborder="0" 
-    allowfullscreen>
-</iframe>
-
 ## Contents
 
 This guide covers setup processes for:
